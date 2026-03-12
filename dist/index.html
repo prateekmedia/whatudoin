@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>what u doin?</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      color: #222;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      padding: 3rem 2rem;
+      border-left: 1.5px solid #ddd;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-bottom: 2rem;
+      line-height: 1.4;
+      color: #999;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h1 img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .tasks {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .item {
+      display: block;
+      font-size: 1.05rem;
+      color: #222;
+      text-decoration: none;
+      padding: 0.8rem 0;
+      line-height: 1.7;
+      cursor: pointer;
+    }
+
+    .item + .item {
+      border-top: 1px solid #f0eeea;
+    }
+
+    a.item:hover, .item.cat:hover {
+      color: #888;
+    }
+
+    span.item:not(.cat) {
+      color: #222;
+      cursor: default;
+    }
+
+    .item.cat::after {
+      content: '\2192';
+      float: right;
+      color: #ccc;
+      transition: transform 0.2s;
+    }
+
+    .item.cat:hover::after {
+      transform: translateX(3px);
+      color: #888;
+    }
+
+    .cat-header {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #bbb;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .cat-header::before {
+      content: '\2190';
+      font-size: 0.85rem;
+    }
+
+    .cat-header:hover {
+      color: #555;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111;
+        color: #d5d5d5;
+      }
+
+      .container {
+        border-left-color: #333;
+      }
+
+      h1 {
+        color: #666;
+      }
+
+      .item {
+        color: #d5d5d5;
+      }
+
+      .item + .item {
+        border-top-color: #222;
+      }
+
+      a.item:hover, .item.cat:hover {
+        color: #888;
+      }
+
+      span.item:not(.cat) {
+        color: #d5d5d5;
+      }
+
+      .item.cat::after {
+        color: #444;
+      }
+
+      .item.cat:hover::after {
+        color: #888;
+      }
+
+      .cat-header {
+        color: #444;
+      }
+
+      .cat-header:hover {
+        color: #999;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        margin: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" alt="">Working on</h1>
+    <div id="view" class="tasks"></div>
+  </div>
+  <script>
+    var CATS = {"work": [{"title": "Bg Processing Task", "url": null}, {"title": "Improve Bg remote notification", "url": null}, {"title": "Prioritize local files first on bg", "url": null}, {"title": "See if discovery / lock issue exist", "url": null}], "personal": [{"title": "Learning nothin", "url": null}]};
+    var TOP = [{"title": "Building whatudoin", "url": "https://github.com/prateeksunal/whatudoin/pull/1"}, {"title": "Reading Project Hail Mary", "url": null}];
+    var IS_FLAT = false;
+    var CAT_KEYS = Object.keys(CATS);
+
+    function render() {
+      var params = new URLSearchParams(window.location.search);
+      var cat = params.get('cat');
+      var view = document.getElementById('view');
+
+      if (IS_FLAT) {
+        view.innerHTML = renderTasks(CATS['_flat']);
+        return;
+      }
+
+      if (cat && CATS[cat]) {
+        var displayName = cat.replace(/-/g, ' ');
+        displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+        view.innerHTML =
+          '<a class="cat-header" onclick="go(null)">' + esc(displayName) + '</a>' +
+          renderTasks(CATS[cat]);
+      } else {
+        var html = CAT_KEYS.map(function(c) {
+          var displayName = c.replace(/-/g, ' ');
+          displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+          var count = CATS[c].length;
+          return '<span class="item cat" onclick="go(\'' + c + '\')">' +
+            esc(displayName) + ' <span style="color:#bbb;font-size:0.85em">(' + count + ')</span></span>';
+        }).join('');
+        html += renderTasks(TOP);
+        view.innerHTML = html;
+      }
+    }
+
+    function renderTasks(tasks) {
+      return tasks.map(function(t) {
+        if (t.url) {
+          return '<a href="' + esc(t.url) + '" target="_blank" rel="noopener" class="item">' + esc(t.title) + '</a>';
+        }
+        return '<span class="item">' + esc(t.title) + '</span>';
+      }).join('');
+    }
+
+    function go(cat) {
+      var url = window.location.pathname;
+      if (cat) url += '?cat=' + encodeURIComponent(cat);
+      history.pushState(null, '', url);
+      render();
+    }
+
+    function esc(s) {
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    window.addEventListener('popstate', render);
+    render();
+  </script>
+</body>
+</html>
