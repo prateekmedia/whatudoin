@@ -1,4 +1,4 @@
-- [Building whatudoin](https://github.com/prateeksunal/whatudoin/pull/1)
+- [Building whatudoin](https://github.com/prateekmedia/whatudoin/pull/1)
 - Reading Project Hail Mary
 
 ## Work
