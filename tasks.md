@@ -2,10 +2,12 @@
 - Reading Project Hail Mary
 
 ## Work
-- Bg Processing Task
+- Bg Processing Task -> 1d, 2d
+- BGContinuedProcessingTask
 - Improve Bg remote notification
 - Prioritize local files first on bg
-- See if discovery / lock issue exist
+- Discovery issue -> Add logs, try did some fixes
+- Lock issue
 
 ## Personal
 - Learning nothin
