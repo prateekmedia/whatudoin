@@ -2,11 +2,10 @@
 - Reading Project Hail Mary
 
 ## Work
-- Bg Processing Task -> 1d, 2d
-- BGContinuedProcessingTask
-- Improve Bg remote notification
+- Bg Processing Task -> Gets Reschedule on expiration
+- Improve Bg remote notification -> Improved
 - Prioritize local files first on bg
-- Discovery issue -> Add logs, try did some fixes
+- Discovery issue -> Added logs
 - Lock issue
 
 ## Personal
