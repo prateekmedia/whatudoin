@@ -11,6 +11,10 @@
     return value.trim().toLowerCase().replace(/\s+/g, "-");
   }
 
+  function categorySlug(category) {
+    return slugify(category.slug || category.name);
+  }
+
   function parseTask(text) {
     var match = text.match(/^\[(.+?)\]\((.+?)\)$/);
     if (match) {
@@ -21,7 +25,7 @@
   }
 
   function parseTasks(markdown) {
-    var categories = {};
+    var categories = [];
     var flat = [];
     var currentCategory = null;
 
@@ -29,9 +33,21 @@
       var line = rawLine.trim();
 
       if (line.startsWith("## ")) {
-        currentCategory = line.slice(3).trim();
-        categories[currentCategory] = [];
+        currentCategory = {
+          name: line.slice(3).trim(),
+          slug: null,
+          tasks: [],
+        };
+        categories.push(currentCategory);
         return;
+      }
+
+      if (currentCategory && currentCategory.tasks.length === 0) {
+        var slugMatch = line.match(/^slug:\s*(.+)$/i);
+        if (slugMatch) {
+          currentCategory.slug = slugMatch[1].trim();
+          return;
+        }
       }
 
       if (!line.startsWith("- ")) {
@@ -40,14 +56,13 @@
 
       var task = parseTask(line.slice(2).trim());
       if (currentCategory) {
-        categories[currentCategory].push(task);
+        currentCategory.tasks.push(task);
       } else {
         flat.push(task);
       }
     });
 
-    var categoryNames = Object.keys(categories);
-    if (categoryNames.length === 0 && flat.length > 0) {
+    if (categories.length === 0 && flat.length > 0) {
       return {
         categories: { _flat: flat },
         topTasks: [],
@@ -56,8 +71,17 @@
     }
 
     var sluggedCategories = {};
-    categoryNames.forEach(function (name) {
-      sluggedCategories[slugify(name)] = categories[name];
+    categories.forEach(function (category, index) {
+      var slug = categorySlug(category);
+
+      if (sluggedCategories[slug]) {
+        slug = slug + "-" + (index + 1);
+      }
+
+      sluggedCategories[slug] = {
+        name: category.name,
+        tasks: category.tasks,
+      };
     });
 
     return {
@@ -71,16 +95,6 @@
     var div = document.createElement("div");
     div.textContent = value;
     return div.innerHTML;
-  }
-
-  function displayName(slug) {
-    return slug
-      .split("-")
-      .filter(Boolean)
-      .map(function (part) {
-        return part.charAt(0).toUpperCase() + part.slice(1);
-      })
-      .join(" ");
   }
 
   function renderTasks(tasks) {
@@ -121,8 +135,8 @@
 
     if (cat && categories[cat]) {
       view.innerHTML =
-        '<a class="cat-header" onclick="go(null)">' + esc(displayName(cat)) + "</a>" +
-        renderTasks(categories[cat]);
+        '<a class="cat-header" onclick="go(null)">' + esc(categories[cat].name) + "</a>" +
+        renderTasks(categories[cat].tasks);
       return;
     }
 
@@ -130,9 +144,9 @@
       .map(function (key) {
         return (
           '<span class="item cat" onclick="go(\'' + esc(key) + '\')">' +
-          esc(displayName(key)) +
+          esc(categories[key].name) +
           ' <span class="count">(' +
-          categories[key].length +
+          categories[key].tasks.length +
           ")</span></span>"
         );
       })
@@ -143,10 +157,7 @@
   }
 
   window.go = function (cat) {
-    var url = window.location.pathname;
-    if (cat) {
-      url += "?cat=" + encodeURIComponent(cat);
-    }
+    var url = cat ? "?cat=" + encodeURIComponent(cat) : window.location.pathname;
     history.pushState(null, "", url);
     render();
   };

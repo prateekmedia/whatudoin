@@ -27,8 +27,14 @@ Supported formats:
 ## Work
 - Task in a category
 
+## Deep Work
+slug: focus
+- Task in a category with an optional custom slug
+
 ## Personal
 - Another task
 ```
 
 If you use headings like `## Work`, the homepage shows categories first. Without headings, it shows a flat list.
+
+If you add an optional `slug: ...` line directly under a heading, that value is used for `?cat=...`. If you omit it, the slug is generated from the heading text.
